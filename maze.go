@@ -8,6 +8,26 @@ import (
 	"strings"
 )
 
+const (
+	DFS = iota
+	BFS
+	GBFS
+	ASTAR
+	DIJKSTRA
+)
+
+type Node struct {
+	index  int
+	State  Point
+	Parent *Node
+	Action string
+}
+
+type Solution struct {
+	Actions []string
+	Cells   []Point
+}
+
 // maze's point on x and y axis
 type Point struct {
 	X int
@@ -22,14 +42,21 @@ type Wall struct {
 }
 
 type Maze struct {
-	Height int
-	Width  int
-	Start  Point
-	Goal   Point
-	Walls  [][]Wall
+	Height      int
+	Width       int
+	Start       Point
+	Goal        Point
+	Walls       [][]Wall
+	CurrentNode *Node
+	Solution    Solution
+	Explored    []Point
+	Steps       int
+	NumExplored int
+	Debug       bool
+	SearchType  int
 }
 
-func (app *application) loadMaze(filename string) error {
+func (m *Maze) loadMaze(filename string) error {
 
 	f, err := os.Open(filename)
 
@@ -77,17 +104,17 @@ func (app *application) loadMaze(filename string) error {
 	}
 
 	if !foundStart {
-		app.logger.Error("starting point 'A' not found")
+		fmt.Errorf("Starting point ('A') not found : %w", err.Error())
 
 	}
 
 	if !foundEnd {
 
-		app.logger.Error("ending point 'B' not found")
+		fmt.Errorf("Ending point ('B') not found : %w", err.Error())
 	}
 
-	app.maze.Height = len(fileContents)
-	app.maze.Width = len(fileContents[0])
+	m.Height = len(fileContents)
+	m.Width = len(fileContents[0])
 
 	var rows [][]Wall
 
@@ -102,13 +129,13 @@ func (app *application) loadMaze(filename string) error {
 			switch currLetter {
 
 			case "A":
-				app.maze.Start = Point{X: i, Y: j}
+				m.Start = Point{X: i, Y: j}
 				wall.State.X = i
 				wall.State.Y = j
 				wall.wall = false
 
 			case "B":
-				app.maze.Goal = Point{X: i, Y: j}
+				m.Goal = Point{X: i, Y: j}
 				wall.State.X = i
 				wall.State.Y = j
 				wall.wall = false
@@ -134,8 +161,36 @@ func (app *application) loadMaze(filename string) error {
 
 	}
 
-	app.maze.Walls = rows
+	m.Walls = rows
 
 	return nil
 
+}
+
+func (g *Maze) printMaze() {
+	for r, row := range g.Walls {
+		for c, col := range row {
+			if col.wall {
+				fmt.Print("█")
+			} else if g.Start.X == col.State.X && g.Start.Y == col.State.Y {
+				fmt.Print("A")
+			} else if g.Goal.X == col.State.X && g.Goal.Y == col.State.Y {
+				fmt.Print("B")
+			} else if g.inSolution(Point{r, c}) {
+				fmt.Print("*")
+			} else {
+				fmt.Print(" ")
+			}
+		}
+		fmt.Println()
+	}
+}
+
+func (g *Maze) inSolution(x Point) bool {
+	for _, step := range g.Solution.Cells {
+		if step.X == x.X && step.Y == x.Y {
+			return true
+		}
+	}
+	return false
 }
