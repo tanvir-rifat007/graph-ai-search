@@ -54,6 +54,7 @@ type Maze struct {
 	NumExplored int
 	Debug       bool
 	SearchType  int
+	Animate     bool
 }
 
 func (m *Maze) loadMaze(filename string) error {

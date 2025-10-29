@@ -8,82 +8,106 @@ import (
 	"slices"
 )
 
-type DepthFirstSearch struct {
+type BreadthFirstSearch struct {
 	Frontier []*Node
 	Game     *Maze
 }
 
-func (dfs *DepthFirstSearch) GetFrontier() []*Node {
-	return dfs.Frontier
+func (bfs *BreadthFirstSearch) GetFrontier() []*Node {
+	return bfs.Frontier
 }
 
-func (dfs *DepthFirstSearch) Add(i *Node) {
-	dfs.Frontier = append(dfs.Frontier, i)
+func (bfs *BreadthFirstSearch) Add(i *Node) {
+	bfs.Frontier = append(bfs.Frontier, i)
+
 }
 
-func (dfs *DepthFirstSearch) ContainsState(i *Node) bool {
-	for _, x := range dfs.Frontier {
+func (bfs *BreadthFirstSearch) ContainsState(i *Node) bool {
+
+	for _, x := range bfs.Frontier {
+
 		if x.State == i.State {
 			return true
+
 		}
+
 	}
+
 	return false
+
 }
 
-func (dfs *DepthFirstSearch) Empty() bool {
-	return len(dfs.Frontier) == 0
+func (bfs *BreadthFirstSearch) Empty() bool {
+
+	return len(bfs.Frontier) == 0
+
 }
 
-func (dfs *DepthFirstSearch) Remove() (*Node, error) {
-	if len(dfs.Frontier) > 0 {
-		if dfs.Game.Debug {
-			fmt.Println("Frontier before remove:")
-			for _, x := range dfs.Frontier {
-				fmt.Println("Node:", x.State)
+func (bfs *BreadthFirstSearch) Remove() (*Node, error) {
+
+	if len(bfs.Frontier) > 0 {
+
+		if bfs.Game.Debug {
+			fmt.Println("Before removing...")
+			for _, val := range bfs.Frontier {
+
+				fmt.Println("Node: ", val.State)
 			}
+
 		}
-		node := dfs.Frontier[len(dfs.Frontier)-1]
-		dfs.Frontier = dfs.Frontier[:len(dfs.Frontier)-1]
+
+		// bfs using the queue approach(FIFO)
+		node := bfs.Frontier[0]
+		bfs.Frontier = bfs.Frontier[1:]
 		return node, nil
+
 	}
-	return nil, errors.New("frontier is empty")
+
+	return nil, errors.New("Frontier is empty!")
+
 }
 
-func (dfs *DepthFirstSearch) Solve() {
-	fmt.Println("Starting to solve maze using Depth First Search...")
-	dfs.Game.NumExplored = 0
+func (bfs *BreadthFirstSearch) Solve() {
+
+	fmt.Println("Starting to solve maze using Breadth First Search...")
+
+	bfs.Game.NumExplored = 0
 
 	start := Node{
-		State:  dfs.Game.Start,
+
+		State:  bfs.Game.Start,
 		Parent: nil,
 		Action: "",
 	}
 
-	dfs.Add(&start)
-	dfs.Game.CurrentNode = &start
+	bfs.Add(&start)
+	bfs.Game.CurrentNode = &start
 
 	for {
-		if dfs.Empty() {
+
+		if bfs.Empty() {
+
 			return
 		}
+		currentNode, err := bfs.Remove()
 
-		currentNode, err := dfs.Remove()
 		if err != nil {
+
 			log.Println(err)
 			return
 		}
 
-		if dfs.Game.Debug {
+		if bfs.Game.Debug {
+
 			fmt.Println("Removed", currentNode.State)
 			fmt.Println("-------")
 			fmt.Println()
 		}
 
-		dfs.Game.CurrentNode = currentNode
-		dfs.Game.NumExplored += 1
-
+		bfs.Game.CurrentNode = currentNode
+		bfs.Game.NumExplored++
 		// Have we found the solution?
-		if dfs.Game.Goal == currentNode.State {
+		if bfs.Game.Goal == currentNode.State {
 			var actions []string
 			var cells []Point
 
@@ -102,25 +126,24 @@ func (dfs *DepthFirstSearch) Solve() {
 			slices.Reverse(actions)
 			slices.Reverse(cells)
 
-			dfs.Game.Solution = Solution{
+			bfs.Game.Solution = Solution{
 				Actions: actions,
 				Cells:   cells,
 			}
-			dfs.Game.Explored = append(dfs.Game.Explored, currentNode.State)
+			bfs.Game.Explored = append(bfs.Game.Explored, currentNode.State)
 			break
 		}
 
-		dfs.Game.Explored = append(dfs.Game.Explored, currentNode.State)
+		bfs.Game.Explored = append(bfs.Game.Explored, currentNode.State)
 
 		// Build animation frame if appropriate.
-		if dfs.Game.Animate {
-			dfs.Game.OutputImage(fmt.Sprintf("tmp/%06d.png", dfs.Game.NumExplored))
+		if bfs.Game.Animate {
+			bfs.Game.OutputImage(fmt.Sprintf("tmp/%06d.png", bfs.Game.NumExplored))
 		}
-
-		for _, x := range dfs.Neighbors(currentNode) {
-			if !dfs.ContainsState(x) {
-				if !inExplored(x.State, dfs.Game.Explored) {
-					dfs.Add(&Node{
+		for _, x := range bfs.Neighbors(currentNode) {
+			if !bfs.ContainsState(x) {
+				if !inExplored(x.State, bfs.Game.Explored) {
+					bfs.Add(&Node{
 						State:  x.State,
 						Parent: currentNode,
 						Action: x.Action,
@@ -128,10 +151,12 @@ func (dfs *DepthFirstSearch) Solve() {
 				}
 			}
 		}
+
 	}
+
 }
 
-func (dfs *DepthFirstSearch) Neighbors(node *Node) []*Node {
+func (bfs *BreadthFirstSearch) Neighbors(node *Node) []*Node {
 	row := node.State.X
 	col := node.State.Y
 
@@ -145,9 +170,9 @@ func (dfs *DepthFirstSearch) Neighbors(node *Node) []*Node {
 
 	var neighbors []*Node
 	for _, x := range candidates {
-		if 0 <= x.State.X && x.State.X < dfs.Game.Height {
-			if 0 <= x.State.Y && x.State.Y < dfs.Game.Width {
-				if !dfs.Game.Walls[x.State.X][x.State.Y].wall {
+		if 0 <= x.State.X && x.State.X < bfs.Game.Height {
+			if 0 <= x.State.Y && x.State.Y < bfs.Game.Width {
+				if !bfs.Game.Walls[x.State.X][x.State.Y].wall {
 					neighbors = append(neighbors, x)
 				}
 			}

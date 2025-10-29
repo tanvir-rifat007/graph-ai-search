@@ -1,5 +1,7 @@
 package main
 
+import "os"
+
 func inExplored(needle Point, items []Point) bool {
 
 	for _, val := range items {
@@ -12,4 +14,16 @@ func inExplored(needle Point, items []Point) bool {
 	}
 
 	return false
+}
+
+func emptyTmp() {
+	directory := "./tmp/"
+	dir, _ := os.Open(directory)
+	filesToDelete, _ := dir.Readdir(0)
+
+	for index := range filesToDelete {
+		f := filesToDelete[index]
+		fullPath := directory + f.Name()
+		_ = os.Remove(fullPath)
+	}
 }
