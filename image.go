@@ -132,10 +132,40 @@ func (g *Maze) drawSquare(col Wall, p Point, img *image.RGBA, c color.Color, siz
 		} else {
 			txtColor = textColor // Cyan text
 		}
+
+		// add the manhattan cost to our each node/square
+
+		switch g.SearchType {
+
+		case DIJKSTRA:
+			g.printManhattanCost(p, color.Black, patch)
+		default:
+		}
+
 		g.printLocation(p, txtColor, patch)
 	}
 
 	draw.Draw(img, image.Rect(x, y, x+size, y+size), patch, image.Point{}, draw.Src)
+}
+
+func (g *Maze) printManhattanCost(p Point, c color.Color, patch *image.RGBA) {
+
+	// position where should i write the cost on each square
+	point := fixed.Point26_6{X: fixed.I(6), Y: fixed.I(17)}
+
+	d := &font.Drawer{
+		Dst:  patch,
+		Src:  image.NewUniform(c),
+		Face: basicfont.Face7x13,
+		Dot:  point,
+	}
+
+	n := Node{
+		State: p,
+	}
+
+	d.DrawString(fmt.Sprintf("%d", n.ManhattanDistance(g.Start)))
+
 }
 
 // printLocation with cyberpunk styling

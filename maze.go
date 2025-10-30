@@ -21,6 +21,15 @@ type Node struct {
 	State  Point
 	Parent *Node
 	Action string
+	// from starting to the current node's cost for DIJKSTRA and other like A*,GBFS algorithms
+	CostToGoal int
+}
+
+// calculate the cost from current node to the starting point
+func (n *Node) ManhattanDistance(goal Point) int {
+
+	return abs(n.State.X-goal.X) + abs(n.State.Y-goal.Y)
+
 }
 
 type Solution struct {
