@@ -49,6 +49,10 @@ func main() {
 		m.SearchType = DIJKSTRA
 		solveDIJKSTRA(&m)
 
+	case "GBFS":
+		m.SearchType = GBFS
+		solveGBFS(&m)
+
 	default:
 		fmt.Println("Invalid search Type")
 		os.Exit(1)
@@ -94,6 +98,15 @@ func solveDFS(m *Maze) {
 func solveBFS(m *Maze) {
 
 	var s BreadthFirstSearch
+	s.Game = m
+	fmt.Println("Goal is : ", s.Game.Goal)
+	s.Solve()
+
+}
+
+func solveGBFS(m *Maze) {
+
+	var s GreedyBestFirstSearch
 	s.Game = m
 	fmt.Println("Goal is : ", s.Game.Goal)
 	s.Solve()

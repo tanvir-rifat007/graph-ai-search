@@ -3,26 +3,26 @@ package main
 // our container/heap package that we used in the dijkstra.go file
 // requires these method's that we create on t he PriorityQueueDijkstra
 
-type PriorityQueueDijkstra []*Node
+type PriorityQueueGBFS []*Node
 
-func (pq PriorityQueueDijkstra) Len() int {
+func (pq PriorityQueueGBFS) Len() int {
 
 	return len(pq)
 }
 
-func (pq PriorityQueueDijkstra) Less(i, j int) bool {
+func (pq PriorityQueueGBFS) Less(i, j int) bool {
 
 	return pq[i].CostToGoal < pq[j].CostToGoal
 }
 
-func (pq PriorityQueueDijkstra) Swap(i, j int) {
+func (pq PriorityQueueGBFS) Swap(i, j int) {
 
 	pq[i], pq[j] = pq[j], pq[i]
 	pq[i].index = i
 	pq[j].index = j
 }
 
-func (pq *PriorityQueueDijkstra) Push(x any) {
+func (pq *PriorityQueueGBFS) Push(x any) {
 
 	n := pq.Len()
 
@@ -35,7 +35,7 @@ func (pq *PriorityQueueDijkstra) Push(x any) {
 
 }
 
-func (pq *PriorityQueueDijkstra) Pop() any {
+func (pq *PriorityQueueGBFS) Pop() any {
 	old := *pq
 	n := pq.Len()
 
