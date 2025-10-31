@@ -23,6 +23,9 @@ type Node struct {
 	Action string
 	// from starting to the current node's cost for DIJKSTRA and other like A*,GBFS algorithms
 	CostToGoal int
+
+	// for only A* search graph
+	EstimatedCostToGoal float64
 }
 
 // calculate the cost from current node to the starting point

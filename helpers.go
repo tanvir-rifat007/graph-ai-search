@@ -1,6 +1,9 @@
 package main
 
-import "os"
+import (
+	"math"
+	"os"
+)
 
 func inExplored(needle Point, items []Point) bool {
 
@@ -36,4 +39,9 @@ func abs(x int) int {
 	}
 
 	return x
+}
+
+func euclideanDist(p, goal Point) float64 {
+	return math.Sqrt(float64(p.X-goal.X)*float64(p.X-goal.X) + float64(p.Y-goal.Y)*float64(p.Y-goal.Y))
+
 }

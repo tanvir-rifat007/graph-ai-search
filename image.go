@@ -141,6 +141,8 @@ func (g *Maze) drawSquare(col Wall, p Point, img *image.RGBA, c color.Color, siz
 			g.printManhattanCost(p, textColor, patch)
 		case GBFS:
 			g.printManhattanCost(p, textColor, patch)
+		case ASTAR:
+			g.printTotalCost(p, textColor, patch)
 		default:
 		}
 
@@ -148,6 +150,29 @@ func (g *Maze) drawSquare(col Wall, p Point, img *image.RGBA, c color.Color, siz
 	}
 
 	draw.Draw(img, image.Rect(x, y, x+size, y+size), patch, image.Point{}, draw.Src)
+}
+
+func (g *Maze) printTotalCost(p Point, c color.Color, patch *image.RGBA) {
+
+	// position where should i write the cost on each square
+	point := fixed.Point26_6{X: fixed.I(6), Y: fixed.I(17)}
+
+	d := &font.Drawer{
+		Dst:  patch,
+		Src:  image.NewUniform(c),
+		Face: basicfont.Face7x13,
+		Dot:  point,
+	}
+
+	n := Node{
+		State: p,
+	}
+
+	fromStartToCurrCost := n.ManhattanDistance(g.Start)
+	fromCurrToGoal := euclideanDist(p, g.Goal)
+
+	d.DrawString(fmt.Sprintf("%.2f", float64(fromStartToCurrCost)+fromCurrToGoal))
+
 }
 
 func (g *Maze) printManhattanCost(p Point, c color.Color, patch *image.RGBA) {
@@ -200,7 +225,7 @@ func isBrightColor(c color.Color) bool {
 	return brightness > 128000 // Threshold for bright colors
 }
 
-// OutputAnimatedImage creates slower animated maze visualization
+// OutputAnimatedImage creates animated maze visualization with proper delays
 func (g *Maze) OutputAnimatedImage() {
 	g.Animate = true
 	output := "./animation.png"
@@ -209,12 +234,9 @@ func (g *Maze) OutputAnimatedImage() {
 	files, _ := os.ReadDir("./tmp")
 
 	var images []string
-	var delays []int
 
 	for _, file := range files {
 		images = append(images, fmt.Sprintf("./tmp/%s", file.Name()))
-		// Slower animation: 100ms per frame (was 30ms)
-		delays = append(delays, 100)
 	}
 	images = append(images, "./image.png")
 
@@ -236,7 +258,15 @@ func (g *Maze) OutputAnimatedImage() {
 		if err != nil {
 			continue
 		}
+
+		// Set both the image AND the delay
 		a.Frames[i].Image = m
+
+		// Set delay correctly: Numerator / Denominator = seconds
+		// For 10ms: 300/1000 = 0.3 seconds
+		a.Frames[i].DelayNumerator = 300
+		a.Frames[i].DelayDenominator = 1000
+
 	}
 
 	err := apng.Encode(out, a)
